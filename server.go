@@ -33,7 +33,11 @@ func serveRoot(c *gin.Context) {
     fileCache["index.html"] = c
   }
   content, _ := fileCache["index.html"]
-  c.HTMLString(200, content)
+  if content != "" {
+    c.HTMLString(200, content)
+  } else {
+    c.HTMLString(404, "404 not found")
+  }
 }
 
 func servePublicFile(c *gin.Context) {
@@ -70,12 +74,12 @@ func getConfig() appData {
 
   appDetailsJson, error := ioutil.ReadFile("app.json")
   if error != nil {
-    log.Fatal(error)
-  }
-
-  error = json.Unmarshal(appDetailsJson, &appDetails)
-  if error != nil {
-    log.Fatal(error)
+    appDetails = make(appData)
+  } else {
+    error = json.Unmarshal(appDetailsJson, &appDetails)
+    if error != nil {
+      log.Fatal(error)
+    }
   }
 
   if _, ok := appDetails["listen"]; !ok {
