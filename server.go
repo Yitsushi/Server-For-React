@@ -79,7 +79,7 @@ func getConfig() appData {
   }
 
   if _, ok := appDetails["listen"]; !ok {
-    appDetails["listen"] = os.Getenv("PORT")
+    appDetails["listen"] = ":" + os.Getenv("PORT")
   }
 
   if _, ok := appDetails["version"]; !ok {
