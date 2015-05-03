@@ -1,94 +1,76 @@
-package main
+package ServerForReact
 
 import "io/ioutil"
-import "encoding/json"
 import "github.com/gin-gonic/gin"
-import "log"
-import "os"
+import "github.com/yitsushi/Server-For-React/configuration"
 
-type appData map[string]string
+//import "log"
 
-func main() {
-  server := gin.Default()
+// Memory cache for server files
+var fileCache = make(map[string]string)
 
-  server.Static("/javascript", "./public/javascript")
-  server.Static("/stylesheet", "./public/stylesheet")
-  server.Static("/image", "./public/image")
+// Configuration holder
+var appConfiguration configuration.AppData
 
-  server.GET("/version", version)
-  server.GET("/html/:fileName", servePublicFile)
+// Run server
+func Run(configurationFilename string) {
+	server := gin.Default()
 
-  server.GET("/", serveRoot)
+	appConfiguration = configuration.GetFromJson(configurationFilename)
 
-  appDetails := getConfig()
+	server.Static("/javascript", "./"+appConfiguration["root"]+"/"+appConfiguration["javascriptDir"])
+	server.Static("/stylesheet", "./"+appConfiguration["root"]+"/"+appConfiguration["stylesheetDir"])
+	server.Static("/image", "./"+appConfiguration["root"]+"/"+appConfiguration["imageDir"])
 
-  server.Run(appDetails["listen"])
+	server.GET("/version", ServeVersion)
+	server.GET("/raw/:fileName", ServeFile)
+
+	server.GET("/", ServeRoot)
+
+	server.Run(appConfiguration["listen"])
 }
 
-func serveRoot(c *gin.Context) {
-  var fileCache = make(map[string]string)
-
-  if fileCache["index.html"] == "" {
-    c, _ := fileLoader("index.html")
-    fileCache["index.html"] = c
-  }
-  content, _ := fileCache["index.html"]
-  if content != "" {
-    c.HTMLString(200, content)
-  } else {
-    c.HTMLString(404, "404 not found")
-  }
+// Server index.html as root
+func ServeRoot(c *gin.Context) {
+	if fileCache["index.html"] == "" {
+		c, _ := fileLoader("index.html")
+		fileCache["index.html"] = c
+	}
+	content, _ := fileCache["index.html"]
+	if content != "" {
+		c.HTMLString(200, content)
+	} else {
+		c.HTMLString(404, "404 not found")
+	}
 }
 
-func servePublicFile(c *gin.Context) {
-  var fileCache = make(map[string]string)
-
-  fileName := c.Params.ByName("fileName")
-    if fileCache[fileName] == "" {
-      c, _ := fileLoader(fileName)
-      fileCache[fileName] = c
-    }
-    content, _ := fileCache[c.Params.ByName("fileName")]
-    if content != "" {
-      c.HTMLString(200, content)
-    } else {
-      c.HTMLString(404, "404 not found")
-    }
+// Server files
+func ServeFile(c *gin.Context) {
+	fileName := c.Params.ByName("fileName")
+	if fileCache[fileName] == "" {
+		c, _ := fileLoader(fileName)
+		fileCache[fileName] = c
+	}
+	content, _ := fileCache[c.Params.ByName("fileName")]
+	if content != "" {
+		c.HTMLString(200, content)
+	} else {
+		c.HTMLString(404, "404 not found")
+	}
 }
 
-func version(c *gin.Context) {
-  appDetails := getConfig()
-  c.JSON(200, gin.H{"version": appDetails["version"]})
+// Serve current version number as a simple endpoint
+// God to test if server is running or not
+func ServeVersion(c *gin.Context) {
+	c.JSON(200, gin.H{"version": appConfiguration["version"]})
 }
 
+// Load file from ROOT
 func fileLoader(filePath string) (string, error) {
-  content, error := ioutil.ReadFile("public/" + filePath)
-  if error != nil {
-    return "", error
-  }
-  return string(content), nil
-}
-
-func getConfig() appData {
-  var appDetails appData
-
-  appDetailsJson, error := ioutil.ReadFile("app.json")
-  if error != nil {
-    appDetails = make(appData)
-  } else {
-    error = json.Unmarshal(appDetailsJson, &appDetails)
-    if error != nil {
-      log.Fatal(error)
-    }
-  }
-
-  if _, ok := appDetails["listen"]; !ok {
-    appDetails["listen"] = ":" + os.Getenv("PORT")
-  }
-
-  if _, ok := appDetails["version"]; !ok {
-    appDetails["version"] = os.Getenv("VERSION")
-  }
-
-  return appDetails
+	//log.Println("Load new file: " + filePath)
+	content, error := ioutil.ReadFile(appConfiguration["root"] + "/" + filePath)
+	if error != nil {
+		return "", error
+	}
+	return string(content), nil
 }
