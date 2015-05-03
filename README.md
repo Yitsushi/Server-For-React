@@ -19,7 +19,7 @@ func main() {
 #### Method 2: standalone for development
 
 ```
-$ got get github.com/yitsushi/server-for-react/standaloneStaticServer
+$ go get github.com/yitsushi/server-for-react/standaloneStaticServer
 ```
 
 ### Structure
