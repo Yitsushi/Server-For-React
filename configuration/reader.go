@@ -26,6 +26,7 @@ func GetFromJson(fileName string) AppData {
 	config["javascriptDir"] = GetEnvOr("JAVASCRIPTDIR", "javascript")
 	config["stylesheetDir"] = GetEnvOr("STYLESHEETDIR", "stylesheet")
 	config["imageDir"] = GetEnvOr("IMAGEDIR", "image")
+	config["cacheFiles"] = GetEnvOr("CACHEFILES", "false")
 
 	// Load from the given json file
 	jsonContent, error := ioutil.ReadFile(fileName)

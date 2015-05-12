@@ -38,7 +38,7 @@ public
     any.png
     any.jpeg
     any.webp
-  inde.html
+  index.html
 src
   javascript
     reactCodeHere
@@ -56,7 +56,8 @@ app.json:
   "root": "public",
   "javascriptDir": "javascript",
   "stylesheetDir": "stylesheet",
-  "imageDir": "image"
+  "imageDir": "image",
+  "cacheFiles": "true"
 }
 ```
 

@@ -35,11 +35,7 @@ func Run(configurationFilename string) {
 
 // Server index.html as root
 func ServeRoot(c *gin.Context) {
-	//if fileCache["index.html"] == "" {
-	f, _ := fileLoader("index.html")
-	fileCache["index.html"] = f
-	//}
-	content, _ := fileCache["index.html"]
+	content, _ := fileLoader("index.html")
 	if content != "" {
 		c.HTMLString(200, content)
 	} else {
@@ -49,12 +45,7 @@ func ServeRoot(c *gin.Context) {
 
 // Server files
 func ServeFile(c *gin.Context) {
-	fileName := c.Params.ByName("fileName")
-	//if fileCache[fileName] == "" {
-	f, _ := fileLoader(fileName)
-	fileCache[fileName] = f
-	//}
-	content, _ := fileCache[c.Params.ByName("fileName")]
+	content, _ := fileLoader(c.Params.ByName("fileName"))
 	if content != "" {
 		c.HTMLString(200, content)
 	} else {
@@ -70,10 +61,16 @@ func ServeVersion(c *gin.Context) {
 
 // Load file from ROOT
 func fileLoader(filePath string) (string, error) {
-	//log.Println("Load new file: " + filePath)
-	content, error := ioutil.ReadFile(filepath.Join(appConfiguration["root"], filePath))
-	if error != nil {
-		return "", error
+	var content string
+	if appConfiguration["cacheFiles"] == "false" || fileCache[filePath] == "" {
+		c, error := ioutil.ReadFile(filepath.Join(appConfiguration["root"], filePath))
+		if error != nil {
+			return "", error
+		}
+		content = string(c)
+		fileCache[filePath] = content
+	} else {
+		content, _ = fileCache[filePath]
 	}
-	return string(content), nil
+	return content, nil
 }
