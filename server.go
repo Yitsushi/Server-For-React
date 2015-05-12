@@ -35,10 +35,10 @@ func Run(configurationFilename string) {
 
 // Server index.html as root
 func ServeRoot(c *gin.Context) {
-	if fileCache["index.html"] == "" {
-		c, _ := fileLoader("index.html")
-		fileCache["index.html"] = c
-	}
+	//if fileCache["index.html"] == "" {
+	c, _ := fileLoader("index.html")
+	fileCache["index.html"] = c
+	//}
 	content, _ := fileCache["index.html"]
 	if content != "" {
 		c.HTMLString(200, content)
@@ -50,10 +50,10 @@ func ServeRoot(c *gin.Context) {
 // Server files
 func ServeFile(c *gin.Context) {
 	fileName := c.Params.ByName("fileName")
-	if fileCache[fileName] == "" {
-		c, _ := fileLoader(fileName)
-		fileCache[fileName] = c
-	}
+	//if fileCache[fileName] == "" {
+	c, _ := fileLoader(fileName)
+	fileCache[fileName] = c
+	//}
 	content, _ := fileCache[c.Params.ByName("fileName")]
 	if content != "" {
 		c.HTMLString(200, content)
