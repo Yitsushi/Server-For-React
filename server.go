@@ -1,6 +1,9 @@
 package ServerForReact
 
-import "io/ioutil"
+import (
+	"io/ioutil"
+	"path/filepath"
+)
 import "github.com/gin-gonic/gin"
 import "github.com/yitsushi/Server-For-React/configuration"
 
@@ -18,9 +21,9 @@ func Run(configurationFilename string) {
 
 	appConfiguration = configuration.GetFromJson(configurationFilename)
 
-	server.Static("/javascript", "./"+appConfiguration["root"]+"/"+appConfiguration["javascriptDir"])
-	server.Static("/stylesheet", "./"+appConfiguration["root"]+"/"+appConfiguration["stylesheetDir"])
-	server.Static("/image", "./"+appConfiguration["root"]+"/"+appConfiguration["imageDir"])
+	server.Static("/javascript", filepath.Join(appConfiguration["root"], appConfiguration["javascriptDir"]))
+	server.Static("/stylesheet", filepath.Join(appConfiguration["root"], appConfiguration["stylesheetDir"]))
+	server.Static("/image", filepath.Join(appConfiguration["root"], appConfiguration["imageDir"]))
 
 	server.GET("/version", ServeVersion)
 	server.GET("/raw/:fileName", ServeFile)
@@ -68,7 +71,7 @@ func ServeVersion(c *gin.Context) {
 // Load file from ROOT
 func fileLoader(filePath string) (string, error) {
 	//log.Println("Load new file: " + filePath)
-	content, error := ioutil.ReadFile(appConfiguration["root"] + "/" + filePath)
+	content, error := ioutil.ReadFile(filepath.Join(appConfiguration["root"], filePath))
 	if error != nil {
 		return "", error
 	}
